@@ -2,6 +2,7 @@ package httpx
 
 import (
 	"fmt"
+	"github.com/kawabatas/mini-web-app/internal/util/clock"
 	"log/slog"
 	"net/http"
 	"os"
@@ -22,7 +23,7 @@ func (w *responseWriter) WriteHeader(code int) {
 
 func LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
+		start := clock.Now()
 		rw := &responseWriter{ResponseWriter: w, status: 200}
 		// - X-Request-Id
 		reqID := r.Header.Get("X-Request-Id")

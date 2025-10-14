@@ -2,9 +2,9 @@ package sqlite
 
 import (
 	"context"
-	"time"
 
 	storageif "github.com/kawabatas/mini-web-app/internal/infra/storage"
+	"github.com/kawabatas/mini-web-app/internal/util/clock"
 )
 
 // GCSSnapshotStrategy は SQLite のスナップショットを GCS（等のObjectStore）に同期する戦略です。
@@ -26,11 +26,11 @@ func (s GCSSnapshotStrategy) OnShutdown(ctx context.Context, dbPath string) erro
 	if s.ObjectStore == nil || s.Bucket == "" {
 		return nil
 	}
-	snap := "/tmp/app-snapshot-" + time.Now().UTC().Format("20060102-150405") + ".sqlite"
+	snap := "/tmp/app-snapshot-" + clock.NowUTCFormatted("20060102-150405") + ".sqlite"
 	if err := SnapshotTo(ctx, dbPath, snap); err != nil {
 		return err
 	}
-	backupKey := "backups/" + time.Now().UTC().Format("2006-01-02") + "/" + time.Now().UTC().Format("150405") + "-" + FileName
+	backupKey := "backups/" + clock.NowUTCFormatted("2006-01-02") + "/" + clock.NowUTCFormatted("150405") + "-" + FileName
 	return s.ObjectStore.UploadTwoPhaseWithBackup(ctx, s.Bucket, FileName, backupKey, snap)
 }
 
@@ -39,11 +39,11 @@ func (s GCSSnapshotStrategy) OnBackup(ctx context.Context, dbPath string) error 
 	if s.ObjectStore == nil || s.Bucket == "" {
 		return nil
 	}
-	snap := "/tmp/app-snapshot-" + time.Now().UTC().Format("20060102-150405") + ".sqlite"
+	snap := "/tmp/app-snapshot-" + clock.NowUTCFormatted("20060102-150405") + ".sqlite"
 	if err := SnapshotTo(ctx, dbPath, snap); err != nil {
 		return err
 	}
-	backupKey := "backups/" + time.Now().UTC().Format("2006-01-02") + "/" + time.Now().UTC().Format("150405") + "-" + FileName
+	backupKey := "backups/" + clock.NowUTCFormatted("2006-01-02") + "/" + clock.NowUTCFormatted("150405") + "-" + FileName
 	return s.ObjectStore.UploadTwoPhaseWithBackup(ctx, s.Bucket, FileName, backupKey, snap)
 }
 

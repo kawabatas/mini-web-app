@@ -8,10 +8,10 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"time"
 
 	"cloud.google.com/go/storage"
 	storageif "github.com/kawabatas/mini-web-app/internal/infra/storage"
+	"github.com/kawabatas/mini-web-app/internal/util/clock"
 )
 
 // DownloadIfNeeded fetches object into dest. Creates empty file if not found.
@@ -68,7 +68,7 @@ func (a *Adapter) UploadTwoPhaseWithBackup(ctx context.Context, bucket, currentO
 	defer client.Close()
 
 	// 1. upload to tmp object
-	ts := time.Now().UTC().Format("20060102-150405")
+	ts := clock.NowUTCFormatted("20060102-150405")
 	base := filepath.Base(currentObject)
 	tmpName := currentObject + ".tmp-" + ts
 
@@ -98,7 +98,7 @@ func (a *Adapter) UploadTwoPhaseWithBackup(ctx context.Context, bucket, currentO
 
 	// 3. copy tmp -> backups/yyyy-mm-dd/HHMMSS-<base>
 	if backupObject == "" {
-		backupObject = "backups/" + time.Now().UTC().Format("2006-01-02") + "/" + time.Now().UTC().Format("150405") + "-" + base
+		backupObject = "backups/" + clock.NowUTCFormatted("2006-01-02") + "/" + clock.NowUTCFormatted("150405") + "-" + base
 	}
 	bdst := client.Bucket(bucket).Object(backupObject)
 	bcopier := bdst.CopierFrom(client.Bucket(bucket).Object(tmpName))

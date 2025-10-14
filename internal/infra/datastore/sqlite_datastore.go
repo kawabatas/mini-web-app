@@ -7,10 +7,10 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/kawabatas/mini-web-app/internal/domain/repository"
 	sqlitedriver "github.com/kawabatas/mini-web-app/internal/infra/datastore/sqlite"
+	"github.com/kawabatas/mini-web-app/internal/util/clock"
 )
 
 type sqliteStore struct {
@@ -61,7 +61,7 @@ func (s *sqliteStore) Backup(ctx context.Context) error {
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
 	}
-	out := filepath.Join(dir, fmt.Sprintf("app-snapshot-%s.sqlite", time.Now().UTC().Format("20060102-150405")))
+	out := filepath.Join(dir, fmt.Sprintf("app-snapshot-%s.sqlite", clock.NowUTCFormatted("20060102-150405")))
 	if err := sqlitedriver.SnapshotTo(ctx, s.dbPath, out); err != nil {
 		return err
 	}

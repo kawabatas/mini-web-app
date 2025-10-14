@@ -64,6 +64,24 @@ func main() {
 		IdleTimeout:       time.Second,
 	}
 
+	// 10分毎にバックアップ
+	if cfg.DBDriver == "" || cfg.DBDriver == "sqlite" {
+		go func() {
+			ticker := time.NewTicker(10 * time.Minute)
+			defer ticker.Stop()
+			for range ticker.C {
+				slog.Info("periodic snapshot start")
+				ctxSnap, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				if err := ds.Backup(ctxSnap); err != nil {
+					slog.ErrorContext(ctxSnap, "periodic snapshot failed", slog.Any("error", err))
+				} else {
+					slog.Info("periodic snapshot complete")
+				}
+				cancel()
+			}
+		}()
+	}
+
 	go func() {
 		slog.Info("server starting", slog.String("addr", srv.Addr))
 		if err := srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {

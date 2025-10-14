@@ -34,4 +34,17 @@ func (s GCSSnapshotStrategy) OnShutdown(ctx context.Context, dbPath string) erro
 	return s.ObjectStore.UploadTwoPhaseWithBackup(ctx, s.Bucket, FileName, backupKey, snap)
 }
 
+// OnBackup performs a periodic snapshot upload without shutting down.
+func (s GCSSnapshotStrategy) OnBackup(ctx context.Context, dbPath string) error {
+	if s.ObjectStore == nil || s.Bucket == "" {
+		return nil
+	}
+	snap := "/tmp/app-snapshot-" + time.Now().UTC().Format("20060102-150405") + ".sqlite"
+	if err := SnapshotTo(ctx, dbPath, snap); err != nil {
+		return err
+	}
+	backupKey := "backups/" + time.Now().UTC().Format("2006-01-02") + "/" + time.Now().UTC().Format("150405") + "-" + FileName
+	return s.ObjectStore.UploadTwoPhaseWithBackup(ctx, s.Bucket, FileName, backupKey, snap)
+}
+
 // 注: インターフェイス実装の明示は循環参照を避けるため省略

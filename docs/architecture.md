@@ -58,7 +58,7 @@ v
 1. **起動時**: Object Storage の `current` スナップショットがあればダウンロード、無ければ新規 DB 作成
 2. **稼働中**: アプリはローカル SQLite に読み書き
 3. **バックアップ**:
-   - `VACUUM INTO` / バックアップ API 等で **一貫スナップショット**を一時ファイルに作成
+   - `VACUUM INTO` / Backup API 等で **一貫スナップショット**を一時ファイルに作成
    - Object Storage に一時名でアップロード → **Object Storage 側コピーで `current` を更新**
    - 併せて `backups/yyyymmdd/...` に世代保管
 4. **終了時**: 最新 DB を同様に `current` と `backups/` に反映（可能な範囲）
@@ -70,7 +70,7 @@ v
 ## 5. Reliability & Consistency
 
 - **WAL モード**：書込と読み取りの安定化
-- **一貫スナップショット**：`VACUUM INTO` / SQLite backup API を用い、書込中でも壊れにくいスナップショットを作成
+- **一貫スナップショット**：`VACUUM INTO` / Backup API を用い、書込中でも壊れにくいスナップショットを作成
 - **二相アップロード**：`tmp-object → copy to current → tmp削除` で切替時の一瞬の不整合を回避
 - **バージョニング**：誤削除・破損からの復元性を確保
 - **同時書込制御**：実行基盤のインスタンス数は 1、同時実行数も 1桁に制限（小規模要件に整合）

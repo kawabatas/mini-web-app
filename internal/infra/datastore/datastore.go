@@ -12,6 +12,8 @@ type DataStore interface {
 	Close(ctx context.Context) error
 	// SetConnPool は接続プール設定を適用します。
 	SetConnPool(maxOpen, maxIdle int)
+	// Backup triggers a DB snapshot without closing connections.
+	Backup(ctx context.Context) error
 
 	// 個別の実装
 	Singers() repository.SingerRepository

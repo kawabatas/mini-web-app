@@ -3,7 +3,11 @@ package datastore
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
+	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/kawabatas/mini-web-app/internal/domain/repository"
 	sqlitedriver "github.com/kawabatas/mini-web-app/internal/infra/datastore/sqlite"
@@ -38,6 +42,31 @@ func (s *sqliteStore) SetConnPool(maxOpen, maxIdle int) {
 	if maxIdle >= 0 {
 		s.db.SetMaxIdleConns(maxIdle)
 	}
+}
+
+// internal interface for optional backup capability on strategy
+type backupCapable interface {
+	OnBackup(ctx context.Context, dbPath string) error
+}
+
+// Backup creates a consistent snapshot of the SQLite DB without closing connections.
+func (s *sqliteStore) Backup(ctx context.Context) error {
+	if s.strategy != nil {
+		if b, ok := any(s.strategy).(backupCapable); ok {
+			return b.OnBackup(ctx, s.dbPath)
+		}
+	}
+	// Default: local snapshot into ./tmp/backups
+	dir := filepath.Join("./tmp", "backups")
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+	out := filepath.Join(dir, fmt.Sprintf("app-snapshot-%s.sqlite", time.Now().UTC().Format("20060102-150405")))
+	if err := sqlitedriver.SnapshotTo(ctx, s.dbPath, out); err != nil {
+		return err
+	}
+	slog.InfoContext(ctx, "local snapshot created", slog.String("path", out))
+	return nil
 }
 
 func openSQLite(ctx context.Context, cfg Config) (DataStore, error) {

@@ -1,18 +1,18 @@
 # Design Doc: Serverless Container + Ephemeral SQLite + Object Storage Backup
 
-**Author:** Kawabata Shintaro
-**Date:** 2025-10-14
-**Status:** Proposed
-**Last Updated:** 2025-10-14
+- **Author:** Kawabata Shintaro
+- **Date:** 2025-10-14
+- **Status:** Proposed
+- **Last Updated:** 2025-10-14
 
 ---
 
 ## 1. Overview
 
-最大 10 名程度の業務利用（7時-21時）を想定した小規模 Web アプリケーションのアーキテクチャ設計。
-目標は **ランニングコスト最小化、ベンダーロックインの低減、運用の簡素化**。
-アプリは **サーバレスなコンテナ実行基盤**で稼働し、データは **コンテナ内の一時ローカル領域上の SQLite** に保存。
-永続化は **オブジェクトストレージ**への**一貫スナップショット**（バックアップ）で実現する。
+- 最大 10 名程度の業務利用（7時-21時）を想定した小規模 Web アプリケーションのアーキテクチャ設計。
+- 目標は **ランニングコスト最小化、ベンダーロックインの低減、運用の簡素化**。
+- アプリは **サーバレスなコンテナ実行基盤**で稼働し、データは **コンテナ内の一時ローカル領域上の SQLite** に保存。
+- 永続化は **オブジェクトストレージ**への**一貫スナップショット**（バックアップ）で実現する。
 
 ---
 
@@ -70,7 +70,7 @@ v
 ## 5. Reliability & Consistency
 
 - **WAL モード**：書込と読み取りの安定化
-- **一貫スナップショット**：`VACUUM INTO` / SQLite backup API を用い、**書込中でも壊れにくい**スナップショットを作成
+- **一貫スナップショット**：`VACUUM INTO` / SQLite backup API を用い、書込中でも壊れにくいスナップショットを作成
 - **二相アップロード**：`tmp-object → copy to current → tmp削除` で切替時の一瞬の不整合を回避
 - **バージョニング**：誤削除・破損からの復元性を確保
 - **同時書込制御**：実行基盤のインスタンス数は 1、同時実行数も 1桁に制限（小規模要件に整合）
@@ -84,7 +84,7 @@ v
   - `index.html` は `no-store`
   - 生成物ファイル（ハッシュ名）は `public, max-age=N, immutable`
 - **メンテナンス**：環境変数でメンテモード切替（API 503）
-- **監視**：構造化ログ（path, status, latency ms, request id）、最小限のエラーレポート
+- **監視**：構造化ログ
 
 ---
 
@@ -118,19 +118,12 @@ v
 
 ---
 
-## 10. Decision
-
-**採用**：Serverless Container + Ephemeral SQLite + Object Storage Backup
-**理由**：コスト最小・低ロックイン・シンプル運用。10人規模に十分な性能/整合性。将来の移行パスも確保。
-
----
-
 ## Appendix A. Example Mappings (Non-normative)
 
 > 本文は実装基盤に依存しない抽象設計。下表は代表例の**参考対応**であり、特定ベンダーへの固定を意図しない。
 
 | 抽象コンポーネント | クラウド例 |
-|---|---|---|
+|---|---|
 | Serverless Container Runtime | Cloud Run / App Runner / Azure Container Apps / AppRun |
 | Object Storage | Cloud Storage / S3 / Azure Blob Storage |
 | Container Registry | Artifact Registry / ECR / ACR |

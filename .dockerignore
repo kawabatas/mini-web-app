@@ -1,0 +1,44 @@
+# ビルドアーティファクト
+*.out
+*.exe
+*.log
+*.sqlite
+*.db
+
+# Git関係
+.git
+.gitignore
+
+# IDE関連
+.codex/
+.vscode/
+.idea/
+*.swp
+
+# OS生成ファイル
+.DS_Store
+Thumbs.db
+
+# Terraformや構成管理ファイル（任意で除外）
+*.tfstate
+*.tfstate.*
+.terraform/
+.infra/
+
+# 環境変数・認証情報
+.env
+.env.*
+.envrc
+.tool-versions
+
+# テスト関連
+coverage/
+*.test
+
+# その他手元限定のファイル
+tmp/
+output/
+local/
+node_modules/
+cmd/playground/
+README.md

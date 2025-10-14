@@ -20,7 +20,7 @@ resource "google_storage_bucket" "datastore_bucket" {
     }
     condition {
       matches_prefix = ["backups"]
-      age = 30
+      age            = 30
     }
   }
 }
@@ -86,8 +86,8 @@ resource "google_cloud_run_v2_service" "app_service" {
     }
 
     service_account                  = google_service_account.run_app_sa.email
-    timeout                          = "60s"
-    max_instance_request_concurrency = 2
+    timeout                          = "2.5s"
+    max_instance_request_concurrency = 2 // 同時リクエストを可能にしておく
     scaling {
       max_instance_count = 1 # 必ず1にする
     }

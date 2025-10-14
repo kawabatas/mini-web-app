@@ -1,0 +1,22 @@
+# --- Logger ---
+# gcp | datadog etc (future)
+export LOG_PROVIDER="gcp"
+# -4(debug) | 0(info) | 4(warn) | 8(error)
+export LOG_LEVEL="-4"
+
+# --- Datastore (DB) ---
+# sqlite | mysql etc (future)
+export DB_DRIVER="sqlite"
+# sqlite source: local | gcs
+# local: ./tmp/app.sqlite, gcs: /tmp/app.sqlite (Cloud Run ephemeral)
+export SQLITE_SOURCE="local"
+
+# --- Object storage (DB snapshot backend) ---
+# gcs | local (no-op)
+export STORAGE_PROVIDER="local"
+# If using GCS
+export SQLITE_BUCKET=""
+
+# --- App ---
+# on | off
+export MAINTENANCE_MODE="off"

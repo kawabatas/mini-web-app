@@ -43,7 +43,7 @@ func (s *SingerService) List(ctx context.Context, p SingerListParams) (SingerLis
 	}
 
 	next := offset + limit
-	if len(base)-1 < limit {
+	if len(base) <= limit {
 		next = -1 // 次ページなし
 	}
 	return SingerListResult{Items: base, Total: len(base), NextOffset: next}, nil

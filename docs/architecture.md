@@ -3,7 +3,7 @@
 - **Author:** Kawabata Shintaro
 - **Date:** 2025-10-14
 - **Status:** Proposed
-- **Last Updated:** 2025-10-14
+- **Last Updated:** 2025-10-15
 
 ---
 
@@ -59,7 +59,7 @@ v
 2. **稼働中**: アプリはローカル SQLite に読み書き
 3. **バックアップ**:
    - `VACUUM INTO` / バックアップ API 等で **一貫スナップショット**を一時ファイルに作成
-   - Object Storage に一時名でアップロード → **サーバ側コピーで `current` を更新**
+   - Object Storage に一時名でアップロード → **Object Storage 側コピーで `current` を更新**
    - 併せて `backups/yyyymmdd/...` に世代保管
 4. **終了時**: 最新 DB を同様に `current` と `backups/` に反映（可能な範囲）
 
@@ -81,7 +81,7 @@ v
 
 - **TLS**：実行基盤の終端/マネージド証明書を利用
 - **キャッシュ**：
-  - `index.html` は `no-store`
+  - `index.html` は `must-revalidate` で毎回再検証
   - 生成物ファイル（ハッシュ名）は `public, max-age=N, immutable`
 - **メンテナンス**：環境変数でメンテモード切替（API 503）
 - **監視**：構造化ログ

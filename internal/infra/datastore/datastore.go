@@ -9,7 +9,7 @@ import (
 // DataStore is an app-facing facade for all repositories.
 type DataStore interface {
 	Ping(ctx context.Context) error
-	Close() error
+	Close(ctx context.Context) error
 	// SetConnPool は接続プール設定を適用します。
 	SetConnPool(maxOpen, maxIdle int)
 

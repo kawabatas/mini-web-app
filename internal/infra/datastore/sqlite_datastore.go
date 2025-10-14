@@ -10,7 +10,6 @@ import (
 )
 
 type sqliteStore struct {
-	ctx      context.Context
 	db       *sql.DB
 	dbPath   string
 	strategy SnapshotStrategy
@@ -19,11 +18,11 @@ type sqliteStore struct {
 }
 
 func (s *sqliteStore) Ping(ctx context.Context) error { return s.db.PingContext(ctx) }
-func (s *sqliteStore) Close() error {
+func (s *sqliteStore) Close(ctx context.Context) error {
 	// 終了時のスナップショットは Strategy に委譲
 	if s.strategy != nil {
-		if err := s.strategy.OnShutdown(s.ctx, s.dbPath); err != nil {
-			slog.ErrorContext(s.ctx, "snapshot shutdown failed", slog.Any("error", err))
+		if err := s.strategy.OnShutdown(ctx, s.dbPath); err != nil {
+			slog.ErrorContext(ctx, "snapshot shutdown failed", slog.Any("error", err))
 		}
 	}
 	return s.db.Close()
@@ -54,7 +53,6 @@ func openSQLite(ctx context.Context, cfg Config) (DataStore, error) {
 		return nil, err
 	}
 	return &sqliteStore{
-		ctx:      ctx,
 		db:       db,
 		dbPath:   dbPath,
 		strategy: cfg.Strategy,

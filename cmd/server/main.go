@@ -34,7 +34,7 @@ func main() {
 		objStore = &gcsstore.Adapter{}
 	}
 
-	// スナップショット戦略（SQLite のみ）を選択
+	// スナップショット戦略を選択
 	var strat datastore.SnapshotStrategy = datastore.NoopSnapshotStrategy{}
 	if cfg.DBDriver == "" || cfg.DBDriver == "sqlite" {
 		if cfg.SnapshotEnabled() {
@@ -47,7 +47,7 @@ func main() {
 	}
 	// 接続プール設定: 最大接続・アイドルともに 10
 	ds.SetConnPool(10, 10)
-	defer ds.Close()
+	// defer ds.Close() --- シャットダウン時に呼び出し ---
 
 	mux := http.NewServeMux()
 	apphttp.Register(mux, ds)
@@ -77,10 +77,16 @@ func main() {
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 	<-sig
 
-	ctxShutdown, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// Cloud Run の場合、SIGTERM から約 10 秒後に強制終了される
+	// https://cloud.google.com/blog/ja/products/application-development/graceful-shutdowns-cloud-run-deep-dive
+	ctxShutdown, cancel := context.WithTimeout(context.Background(), 8*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctxShutdown); err != nil {
 		log.Fatalf("shutdown error: %v", err)
 	}
+	if err := ds.Close(ctxShutdown); err != nil {
+		log.Fatalf("datastore close error: %v", err)
+	}
+
 	slog.Info("graceful shutdown complete")
 }

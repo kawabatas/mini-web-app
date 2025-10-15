@@ -75,6 +75,14 @@ resource "google_cloud_run_v2_service" "app_service" {
         name  = "MAINTENANCE_MODE"
         value = "off"
       }
+      env {
+        name  = "PERIODIC_BACKUP"
+        value = "off"
+      }
+      env {
+        name  = "PERIODIC_BACKUP_MINUTES"
+        value = "10"
+      }
 
       resources {
         limits = {
@@ -86,7 +94,7 @@ resource "google_cloud_run_v2_service" "app_service" {
     }
 
     service_account                  = google_service_account.run_app_sa.email
-    timeout                          = "2.5s"
+    timeout                          = "2s"
     max_instance_request_concurrency = 2 // 同時リクエストを可能にしておく
     scaling {
       max_instance_count = 1 # 必ず1にする

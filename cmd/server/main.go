@@ -39,6 +39,8 @@ func main() {
 	if cfg.DBDriver == "" || cfg.DBDriver == "sqlite" {
 		if cfg.SnapshotEnabled() {
 			strat = sqlitestrat.GCSSnapshotStrategy{ObjectStore: objStore, Bucket: cfg.SqliteBucket}
+		} else {
+			strat = sqlitestrat.LocalSnapshotStrategy{OutputDir: ""}
 		}
 	}
 	ds, err := datastore.Open(ctx, datastore.Config{Driver: cfg.DBDriver, Source: cfg.SqliteSource, Strategy: strat})
@@ -64,14 +66,14 @@ func main() {
 		IdleTimeout:       time.Second,
 	}
 
-	// 10分毎にバックアップ
-	if cfg.DBDriver == "" || cfg.DBDriver == "sqlite" {
+	// 定期バックアップ（VACUUM INTO の負荷を避けるためデフォルトoff）
+	if (cfg.DBDriver == "" || cfg.DBDriver == "sqlite") && cfg.PeriodicBackupEnabled() {
 		go func() {
-			ticker := time.NewTicker(10 * time.Minute)
+			ticker := time.NewTicker(time.Duration(cfg.PeriodicBackupIntervalMinutes()) * time.Minute)
 			defer ticker.Stop()
 			for range ticker.C {
 				slog.Info("periodic snapshot start")
-				ctxSnap, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				ctxSnap, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 				if err := ds.Backup(ctxSnap); err != nil {
 					slog.ErrorContext(ctxSnap, "periodic snapshot failed", slog.Any("error", err))
 				} else {

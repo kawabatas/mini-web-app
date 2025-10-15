@@ -20,3 +20,6 @@ export SQLITE_BUCKET=""
 # --- App ---
 # on | off
 export MAINTENANCE_MODE="off"
+# on | off
+export PERIODIC_BACKUP="off"
+export PERIODIC_BACKUP_MINUTES="10"

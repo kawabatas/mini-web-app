@@ -2,13 +2,14 @@ package httpx
 
 import (
 	"fmt"
-	"github.com/kawabatas/mini-web-app/internal/util/clock"
 	"log/slog"
 	"net/http"
 	"os"
 	"runtime/debug"
 	"strings"
 	"time"
+
+	"github.com/kawabatas/mini-web-app/internal/util/clock"
 )
 
 type responseWriter struct {
@@ -73,7 +74,7 @@ func RecoverMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if rec := recover(); rec != nil {
-				slog.Error("panic",
+				slog.ErrorContext(r.Context(), "panic",
 					slog.Any("error", rec),
 					slog.String("path", r.URL.Path),
 					slog.String("method", r.Method),

@@ -72,12 +72,12 @@ func main() {
 			ticker := time.NewTicker(time.Duration(cfg.PeriodicBackupIntervalMinutes()) * time.Minute)
 			defer ticker.Stop()
 			for range ticker.C {
-				slog.Info("periodic snapshot start")
 				ctxSnap, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+				slog.InfoContext(ctxSnap, "periodic snapshot start")
 				if err := ds.Backup(ctxSnap); err != nil {
 					slog.ErrorContext(ctxSnap, "periodic snapshot failed", slog.Any("error", err))
 				} else {
-					slog.Info("periodic snapshot complete")
+					slog.InfoContext(ctxSnap, "periodic snapshot complete")
 				}
 				cancel()
 			}
@@ -85,11 +85,11 @@ func main() {
 	}
 
 	go func() {
-		slog.Info("server starting", slog.String("addr", srv.Addr))
+		slog.InfoContext(ctx, "server starting", slog.String("addr", srv.Addr))
 		if err := srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("server error: %v", err)
 		}
-		slog.Info("server stopped accepting new conns")
+		slog.InfoContext(ctx, "server stopped accepting new conns")
 	}()
 
 	// シャットダウン待受け
@@ -108,5 +108,5 @@ func main() {
 		log.Fatalf("datastore close error: %v", err)
 	}
 
-	slog.Info("graceful shutdown complete")
+	slog.InfoContext(ctxShutdown, "graceful shutdown complete")
 }

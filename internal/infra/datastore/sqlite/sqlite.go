@@ -104,6 +104,8 @@ func SnapshotTo(ctx context.Context, dbPath, outPath string) error {
 	// WALモードでもVACUUM INTOは一貫したコピーを生成できる
 	var lastErr error
 	for i := 0; i < maxRetries; i++ {
+		// WALファイル肥大化対策: チェックポイントでWALをtruncate
+		_, _ = db.ExecContext(ctx, "PRAGMA wal_checkpoint(TRUNCATE);")
 		// outPathは信頼できるパスのみを渡すこと（SQLインジェクション注意）
 		vacuumSQL := fmt.Sprintf(`VACUUM INTO '%s';`, outPath)
 		_, err := db.ExecContext(ctx, vacuumSQL)
